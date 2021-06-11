@@ -12,37 +12,52 @@ library(zoo)
 
 ### 2.0 - Import Raster layers and stacks.
 #####################################################################
-setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/")
-assay.list <- c()
+#setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/")
+path.prefix = "C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/"
 
-setwd("E245 - FITC/E245_FITC_02-24/stacktoprocess/"); time.step = 20 ; title = "FITC 2-24"
-setwd("E245 - FITC/E245_FITC_02-21/stacktoprocess/"); time.step = 20 ; title = "FITC 2-21"
-setwd("E245 - FITC/E245_FITC_02-17and19/stacktoprocess/"); time.step = 20
-setwd("E245 - FITC/E245_FITC_02-04/stacktoprocess/"); time.step = 20
-setwd("E245 - FITC/E245_6-15 iEC seeding assessment/stacktoprocess/"); time.step = 20
-
-setwd("E300 - iEC FITC Assay/E300_06-27_07-15/sequencetoprocess-6-27_7-15_A"); time.step = 10 ; title = "FITC 7-15 A"
-setwd("E300 - iEC FITC Assay/E300_06-27_07-15/sequencetoprocess-6-27_07-15_B"); time.step = 10 ; title = "FITC 7-15 B"
-setwd("E300 - iEC FITC Assay/E300_07-23_07-27/sequence_07-23_07-27"); time.step = 10 ; title = "FITC 7-27"
+### 2020
+setwd("E245 - FITC/E245_FITC_02-24/stacktoprocess/"); time.step = 20 ; title = "FITC-BSA 2-24_B"
+setwd("E245 - FITC/E245_FITC_02-21/stacktoprocess/"); time.step = 20 ; title = "FITC-Dex 2-21_A"
+setwd("E245 - FITC/E245_FITC_02-17and19/stacktoprocess/"); time.step = 20; title = "FITC-BSA 2-17_A"
+setwd("E245 - FITC/E245_FITC_02-04/stacktoprocess/"); time.step = 20; title = "FITC 02-04_A"
+setwd("E245 - FITC/E245_6-15 iEC seeding assessment/stacktoprocess/"); time.step = 20; title = "FITC 06-15"
+## June/July
+setwd("E300 - iEC FITC Assay/06-27_07-15/sequencetoprocess-6-27_7-15_A/"); time.step = 10 ; title = "FITC 7-15 A"     #
+setwd("E300 - iEC FITC Assay/06-27_07-15/sequencetoprocess-6-27_07-15_B"); time.step = 10 ; title = "FITC 7-15 B"     #
+setwd("E300 - iEC FITC Assay/07-23_07-27/sequence_07-23_07-27"); time.step = 10 ; title = "FITC 7-27"
 setwd("E300 - iEC FITC Assay/E300_HU_07-24/sequence-HU-empty"); time.step = 10
 setwd("E300 - iEC FITC Assay/E300_HU_07-24/sequence-HU"); time.step = 10
 setwd("E300 - iEC FITC Assay/E300_HU_07-24/sequence-HU"); time.step = 10
-
 setwd("E300 - iEC FITC Assay/07-25_07-29/sequence-07-25_07-29 cells/"); time.step = 10 ; title = "FITC 7-25 cells"
 setwd("E300 - iEC FITC Assay/07-25_07-29/sequence-07-25_07-29 no cells//"); time.step = 10 ; title = "FITC 7-25 no cells"     #
-
+## Dec.
 setwd("E352 - FITC Analysis/s12-21/sequence_s12-21_C_no_cells/"); time.step = 10 ; title = "FITC s12-21 no cells"     #
 setwd("E352 - FITC Analysis/s12-21/sequence_s12-21_D_cells/"); time.step = 10 ; title = "FITC s12-21 w cells"     #
 #setwd("E352 - FITC Analysis/s12-21/seq_s12-21_C_no_cells_raw/"); time.step = 10 ; title = "FITC s12-21 no cells"
 #setwd("E352 - FITC Analysis/s12-21/seq_s12-21_D_cells_raw/"); time.step = 10 ; title = "FITC s12-21 w cells"
 
+### 2021, Jan
+setwd("E352 - FITC Analysis/c01-18_s01-18/seq_chA_cells/"); time.step = 20; title = "FITC-A-BSA cells"            #
+setwd("E352 - FITC Analysis/c01-18_s01-18/seq_chA_cells_non-norm/"); time.step = 20; title = "FITC-BSA, c01-18_A (cells)"
+setwd("E352 - FITC Analysis/c01-18_s01-18/seq_chB_nocells/"); time.step = 20; title = "FITC-BSA, c01-18_B (nocells)"        
+## Feb
 #setwd("E352 - FITC Analysis/c02-18/seq 0.5 001/"); time.step = 20 ; title = "FITC-dex_c02-17_nc"
 #setwd("E352 - FITC Analysis/c02-18/seq 0.5 002/"); time.step = 20 ; title = "FITC-dex_c02-17_nc 5-10min"     
 setwd("E352 - FITC Analysis/c02-18/seq B 0.5 00001/"); time.step = 20 ; title = "FITC-dex_c02-17_B_nc"     #
 setwd("E352 - FITC Analysis/c02-18/seq 0.5 001_002/"); time.step = 20 ; title = "FITC-dex_c02-17_nc_joined"     #
-
-setwd("E352 - FITC Analysis/c02-19/E352-c02-19A_timeseries_reg/"); time.step = 20 ; title = "FITC-dex_c09MAR_A_nc"    #
-setwd("E352 - FITC Analysis/c02-19/E352-c02-19B_timeseries_reg/"); time.step = 20 ; title = "FITC-dex_c09MAR_B_nc"    #
+setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/c02-19/E352-c02-19A_timeseries_reg/"); time.step = 20 ; title = "FITC-dex_c19FEB_A_nc"    
+setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/c02-19/E352-c02-19B_timeseries_reg/"); time.step = 20 ; title = "FITC-dex_c19FEB_B_nc"    
+## Mar
+setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/03-March/c04MAR/seq - B/"); time.step = 20 ; title = 'FITC-dex_c04MAR_B - dead cells'
+setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/03-March/c17MAR/sequence-c17MAR_B/"); time.step = 20 ; title = 'FITC-dex_c17MAR_B - cells'
+## Apr
+setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/04-April/c02APR/seq_A/"); time.step = 20 ; title = 'FITC-dex_c02APR_A - dead cells'
+setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/04-April/c02APR/seq_B/"); time.step = 20 ; title = 'FITC-dex_c02APR_B - dead cells'
+setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/04-April/c05APR/Seq_A"); time.step = 20 ; title = 'FITC-dex_c05APR_A - cells'
+setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/04-April/c09APR/seq_A_01/"); time.step = 20 ; title = 'FITC-dex_c09APR_A - cells'
+setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/04-April/c09APR/seq_B"); time.step = 20 ; title = 'FITC-dex_c09APR_B - nc'
+setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/04-April/c15APR/seq_A_nc/"); time.step = 20 ; title = 'FITC-dex_c15APR_A - nc'
+setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/04-April/c15APR/seq_B_cells/"); time.step = 20 ; title = 'FITC-dex_c15APR_B - cells'
 
 stack.to.process <- stack(list.files())
 
@@ -127,13 +142,14 @@ diff.front
 
 ### 4.1 - Identify channel edges and fluorescence cutoffs
 ### 
+cutoff = max.background * 2                                               # For linear data
 max.intensity = max(diffusion.df$t0)
 max.background = max(diffusion.df$t0[1:100])
-above.threshold = which(diffusion.df$t0 > max.background*2)
+above.threshold = which(diffusion.df$t0 > cutoff)
 left.channel.edge <- diffusion.df$position[above.threshold[1]]
 right.channel.edge <- diffusion.df$position[above.threshold[length(above.threshold)]]
 
-(boundary.lines <- diff.front + geom_hline(yintercept = max.background * 2, linetype="dashed", color = "red", size=1) +
+(boundary.lines <- diff.front + geom_hline(yintercept = cutoff, linetype="dashed", color = "red", size=1) +
   geom_vline(xintercept = left.channel.edge, color = "blue") +
   geom_vline(xintercept = right.channel.edge, color = "blue"))
 
@@ -190,8 +206,8 @@ dist.over.time <- ggplot(data = edge.pos.df, aes(x = time/60, y = distance)) +
   geom_line(aes(y = distance), color = 'blue', size = 2) +
   geom_point(aes(y = dist.left), color = 'grey50', pch = '-', size = 7) +
   geom_point(aes(y = dist.right), color = 'grey50', pch = '-', size = 7) +
-  scale_x_continuous(name="Time (Min)", breaks = seq(0,10000, 5)) +
-  scale_y_continuous(name="Distance from channel (um)", breaks = seq(0,10000, 100)) +
+  scale_x_continuous(name="Time (Min)", limits = c(0,30), breaks = seq(0,10000, 5)) +
+  scale_y_continuous(name="Distance from channel (um)", limits = c(0,1800), breaks = seq(0,10000, 100)) +
   labs(title="Diffusion front Distance from Channel Edge Over Time", 
        y = "Distance from Channel (um)", x="Time (min)", subtitle = assayID) +
   theme(panel.background = element_rect(fill = "grey95", colour = "black"), 
@@ -205,7 +221,7 @@ dist.over.time
 
 ### Save plot
 setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/")
-png(filename= paste0('Diff fronts over time/', assayID,'_front dist over time.png'), width = 800, height = 800, units = "px", pointsize = 12)
+png(filename= paste0('Diff DISTANCE over time/', assayID,'_front dist over time.png'), width = 800, height = 800, units = "px", pointsize = 12)
 plot(dist.over.time)
 dev.off()
 
@@ -280,7 +296,7 @@ dev.off()
 ### 3.0 - Manual plotting of intensity profile
 #####################################################################
 ### Select stack layer
-stacklayer = 1
+stacklayer = 10
 layer.current <- stack.to.process[[stacklayer]]           # Pull the specified layer
 #layer.current <- subset(stack.to.process,stacklayer)     # An alternative means of calling a layer
 
@@ -316,7 +332,7 @@ plot.20 <- plot(row.averages)
 
 
 
-### TS-2 - Manual plotting of positions above cuttoff
+### TS-2 - Manual plotting of positions above cutoff
 #####################################################################
 umPerPixel = 2.5
 channelWidth = 600
