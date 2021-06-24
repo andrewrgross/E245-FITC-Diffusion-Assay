@@ -138,7 +138,7 @@ diff.front <- ggplot(data=diffusion.df, aes(x = position), label = c("t0","t1","
   labs(title="Diffusion range over Time", y="Log Relative Fluorescent Intensity", x="Position (um)")
 
 ### Display Plot
-diff.front
+diff.front +coord_flip()
 
 ### 4.1 - Identify channel edges and fluorescence cutoffs
 ### 
@@ -149,9 +149,11 @@ above.threshold = which(diffusion.df$t0 > cutoff)
 left.channel.edge <- diffusion.df$position[above.threshold[1]]
 right.channel.edge <- diffusion.df$position[above.threshold[length(above.threshold)]]
 
-(boundary.lines <- diff.front + geom_hline(yintercept = cutoff, linetype="dashed", color = "red", size=1) +
+(boundary.lines <- diff.front + geom_hline(yintercept = cutoff, linetype="dashed", color = "white", size=1) +
   geom_vline(xintercept = left.channel.edge, color = "blue") +
-  geom_vline(xintercept = right.channel.edge, color = "blue"))
+  geom_vline(xintercept = right.channel.edge, color = "blue")) 
+
+boundary.lines + coord_flip()
 
 ### Export plot
 setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/")

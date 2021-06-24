@@ -42,7 +42,7 @@ metadata.df <- data.frame(file.list = file.list, cells = c('dead', 'dead', 'dead
 print(data.frame(file.list))
 print(metadata.df)
 
-table.number <- 8
+table.number <- 6
 (assayID <- names(diffusion.data.list)[table.number])
 edge.pos.df <- diffusion.data.list[[table.number]]
 
@@ -80,6 +80,7 @@ metadata.df
 #assays.to.include <- c(4, 5, 8, 9, 6, 7) ;colors.to.plot = c('green', 'green', 'green', 'green', 'grey', 'grey')
 assays.to.include <- c(4, 5, 8, 9, 6, 7, 1, 2, 3) ;colors.to.plot = c('green2', 'green2', 'green2', 'green2', 'grey', 'grey', 'grey', 'grey', 'grey')
 assays.to.include <- c(10, 11, 4, 5, 8, 9, 6, 7, 1, 2, 3) ;colors.to.plot = c('grey', 'grey', 'green', 'green', 'green', 'green', 'grey60', 'grey60', 'grey60', 'grey60', 'grey60')
+assays.to.include <- c(5, 6, 5, 6, 5, 6, 5, 6, 5, 5, 5) ;colors.to.plot = c('green2', 'grey', 'green', 'grey', 'green', 'green', 'grey60', 'grey60', 'grey60', 'grey60', 'grey60')
 
 
 print(data.frame(file.list[assays.to.include]))
@@ -125,19 +126,19 @@ labels.to.plot
 ### Overlay diffusion front distance over time plots to compare them
 
 multi.track.plot <- ggplot(edge.pos.multi, aes(x = time/60)) +
-  geom_point(aes(y = distance), color = colors.to.plot[1], size = 2) +
+  geom_point(aes(y = distance), color = 'green4', size = 2) +
   geom_point(aes(y = distance2), color = colors.to.plot[2], size = 2) +
-  geom_point(aes(y = distance3), color = colors.to.plot[3], size = 2) +
-  geom_point(aes(y = distance4), color = colors.to.plot[4], size = 2) +
-  geom_point(aes(y = distance5), color = colors.to.plot[5], size = 2) +
-  geom_point(aes(y = distance6), color = colors.to.plot[6], size = 2) +
-  geom_point(aes(y = distance7), color = colors.to.plot[7], size = 2) +
+#  geom_point(aes(y = distance3), color = colors.to.plot[3], size = 2) +
+#  geom_point(aes(y = distance4), color = colors.to.plot[4], size = 2) +
+#  geom_point(aes(y = distance5), color = colors.to.plot[5], size = 2) +
+#  geom_point(aes(y = distance6), color = colors.to.plot[6], size = 2) +
+#  geom_point(aes(y = distance7), color = colors.to.plot[7], size = 2) +
 #  geom_point(aes(y = distance8), color = colors.to.plot[8], size = 2) +
 #  geom_point(aes(y = distance9), color = colors.to.plot[9], size = 2) +
 #  geom_point(aes(y = distance10), color = colors.to.plot[10], size = 2) +
 #  geom_point(aes(y = distance11), color = colors.to.plot[11], size = 2) +
-  scale_x_continuous(name="Time (Min)", breaks = seq(0,100, 5), limits = c(0,37)) +
-  scale_y_continuous(name="Distance from channel (um)", breaks = seq(0,10000, 100), limits = c(0,1600)) +
+  scale_x_continuous(name="Time (Min)", breaks = seq(0,100, 5), limits = c(0,30)) +
+  scale_y_continuous(name="Distance from channel (um)", breaks = seq(0,10000, 100), limits = c(0,1400)) +
   labs(title="Diffusion Front Distance from Channel Edge Over Time", 
        y = "Distance from Channel (um)", x="Time (min)") +
   theme(panel.background = element_rect(fill = "grey98", colour = "black"), 
