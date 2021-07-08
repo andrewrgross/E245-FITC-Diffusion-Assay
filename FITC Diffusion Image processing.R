@@ -1,18 +1,18 @@
 ### FITC Diffusion Image Processing -- Andrew R Gross -- 2020/03/01
 ### The script reads in timeseries data in TIFF format, averages intensity across the length of a channel,
-### And plots the intensity based on it's position and time.
-
+### And plots the intensity based on its position and time.
+##########################################################################################################################################
 ### 1.0 - Header
-#####################################################################
-require(raster)             # Load raster package
+##########################################################################################################################################
+require(raster)
 require(rgdal)
 library(plotly)
 library(ggplot2)
 library(zoo)
 
+##########################################################################################################################################
 ### 2.0 - Import Raster layers and stacks.
-#####################################################################
-#setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/")
+##########################################################################################################################################
 path.prefix = "C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/"
 
 ### 2020
@@ -59,55 +59,57 @@ setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/
 setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/04-April/c15APR/seq_A_nc/"); time.step = 20 ; title = 'FITC-dex_c15APR_A - nc'
 setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/04-April/c15APR/seq_B_cells/"); time.step = 20 ; title = 'FITC-dex_c15APR_B - cells'
 
+#####################################################################
+## 2.1 - Import selected image set
 stack.to.process <- stack(list.files())
 
-### Report data info
-print(names(stack.to.process)[1])
-(assayID = title)
-print(paste('Dimensions: height =', dim(stack.to.process)[1], ', width =', dim(stack.to.process)[2]))
-print(paste('Time stop =', time.step, 'seconds'))
-print(paste(dim(stack.to.process)[3], 'time points. Total run = ', dim(stack.to.process)[3]*time.step/60, 'minutes'))
-
-
-### 3.0 - Automated generation of intensity profiles for each layer
 #####################################################################
-### Generates a matrix of the averaged intensity of each frame
-row.averages.matrix <- matrix(0, nrow = dim(stack.to.process)[3], ncol = dim(stack.to.process)[1] - 8)
-nlayers = dim(stack.to.process)[3]
+## 2.2 - Report dataset infomation
+print(names(stack.to.process)[1])                                    # Print the name of the first image
+(assayID = title)                                                    # Print the name assigned to the dataset
+print(paste('Dimensions: height =', dim(stack.to.process)[1], ', width =', dim(stack.to.process)[2]))  # Print the dimensions
+print(paste('Time stop =', time.step, 'seconds'))                                                      # Print the time step
+print(paste(dim(stack.to.process)[3], 'time points. Total run = ', dim(stack.to.process)[3]*time.step/60, 'minutes'))  # Print the length of the time series
+
+##########################################################################################################################################
+### 3.0 - Automated generation of intensity profiles for each layer
+##########################################################################################################################################
+### The following generates a matrix of the averaged intensity of each frame
+row.averages.matrix <- matrix(0, nrow = dim(stack.to.process)[3], ncol = dim(stack.to.process)[1] - 8) # Generate an empty matrix with a row for each time point as long as the image height
+nlayers = dim(stack.to.process)[3]                                  # Define the number of images to loop through
 
 for(stacklayer in 1:nlayers){                           #$$$$$$$$$$$ ~0.5 sec/slice $$$$$$$$$$$
   layer.current = stack.to.process[[stacklayer]]        ### Select the current layer data
   layer.matrix <- as.matrix(layer.current)+1            ### Convert to Matrix
-  layer.matrix <- log(layer.matrix)+1
+  layer.matrix <- log(layer.matrix)+1                   ### Log transform the intensity
   row.averages <- apply(layer.matrix,1,mean)            ### Calcuate row averages
-  row.averages <- rollmean(row.averages, k = 9)
-  row.averages.matrix[stacklayer,] <- row.averages      ### Assign to matrix
+  row.averages <- rollmean(row.averages, k = 9)         ### Smooth the data
+  row.averages.matrix[stacklayer,] <- row.averages      ### Assign to the matrix
 }
 
-dim(row.averages.matrix)
-
-
-### 4.0 - Plot multiple intensity profiles
-#####################################################################
+##########################################################################################################################################
+### 4.0 - Plot five intensity profiles summarizing the time series
+##########################################################################################################################################
 ### Define the timesteps of the timeseries and the plot
-timestepInSeconds = time.step
-umPerPixel = 2.5
-(lengthinminutes = timestepInSeconds * dim(row.averages.matrix)[1] / 60)
-(plottingTimestepInMinutes = floor(lengthinminutes/5))
+timestepInSeconds = time.step                                        # Define the time step in seconds
+umPerPixel = 2.5                                                     # Define the distance each pixel represents in um
+lengthinminutes = timestepInSeconds * dim(row.averages.matrix)[1]/60 # Redefine the length in minutes
+(plottingTimestepInMinutes = floor(lengthinminutes/5))               # Select a timestep to represent the diffusion using five evenly spaced time points 
 (frameJump = plottingTimestepInMinutes * 60 / timestepInSeconds)
 
-### Subsample matrix and populated dataframe
+#####################################################################
+## 4.1 - Subsample matrix based on the selected time points and populate a dataframe
 position = umPerPixel * 1:dim(row.averages.matrix)[2]
-diffusion.df <- data.frame(position, t0 = 0, t1 = 0, t2 = 0, t3 = 0, t4 = 0, t5 = 0)         # Generate a dataframe with the position as rows
+diffusion.df <- data.frame(position, t0=0, t1=0, t2=0, t3=0, t4=0, t5=0)  # Generate a dataframe with the position as rows
 
-for (timepoint in 1:6) {
+for (timepoint in 1:6) {                                             
   row = 1 + (timepoint - 1) * frameJump
   newColumn = row.averages.matrix[row,]
-  #diffusion.df <- cbind(diffusion.df, newColumn)
   diffusion.df[timepoint+1] = newColumn
 }
 
-### Plot multiple intensity profiles
+#####################################################################
+## 4.2 - Plot multiple intensity profiles using the data frame of subsampled time points
 diff.front <- ggplot(data=diffusion.df, aes(x = position), label = c("t0","t1","t2", "t3", "t4", "t5")) + 
   geom_line(aes(y=t0, col = 't0'), size = 2) + 
   geom_line(aes(y=t1, col = 't1'), size = 1) +
@@ -137,73 +139,72 @@ diff.front <- ggplot(data=diffusion.df, aes(x = position), label = c("t0","t1","
                      limits = c("t0", "t1", "t2", "t3", "t4", "t5")) +
   labs(title="Diffusion range over Time", y="Log Relative Fluorescent Intensity", x="Position (um)")
 
-### Display Plot
+#####################################################################
+## 4.3 - Display Plot of multiple intensity profiles
 diff.front +coord_flip()
 
-### 4.1 - Identify channel edges and fluorescence cutoffs
-### 
-cutoff = max.background * 2                                               # For linear data
-max.intensity = max(diffusion.df$t0)
-max.background = max(diffusion.df$t0[1:100])
-above.threshold = which(diffusion.df$t0 > cutoff)
-left.channel.edge <- diffusion.df$position[above.threshold[1]]
+#####################################################################
+## 4.4 - Identify channel edges and fluorescence cutoffs
+max.background = max(diffusion.df$t0[1:100])                        # Find the maximum intensity in the first 100 pixels of the first image
+cutoff = max.background * 2                                         # Define the cutoff as twice the maximum background intensity
+#max.intensity = max(diffusion.df$t0)
+above.threshold = which(diffusion.df$t0 > cutoff)                   # Identify which positions are above the cutoff
+left.channel.edge <- diffusion.df$position[above.threshold[1]]      # Find the left-most and right-most positions above the cutoff
 right.channel.edge <- diffusion.df$position[above.threshold[length(above.threshold)]]
 
+## Plot the intensity profiles with the cutoff and boundary lines superimposed
 (boundary.lines <- diff.front + geom_hline(yintercept = cutoff, linetype="dashed", color = "white", size=1) +
   geom_vline(xintercept = left.channel.edge, color = "blue") +
   geom_vline(xintercept = right.channel.edge, color = "blue")) 
 
 boundary.lines + coord_flip()
 
-### Export plot
+
+##########################################################################################################################################
+### 5.0 - Export plot
+##########################################################################################################################################
 setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/")
 
 png(filename= paste0('Diff ranges over time/', assayID,'_Diff range over time.png'), width = 800, height = 800, units = "px", pointsize = 12)
 plot(boundary.lines)
 dev.off()
 
-#####################################################################
-#####################################################################
+##########################################################################################################################################
 ### 6.0 - Automated plotting of X-positions above cutoff
-#####################################################################
-#####################################################################
+##########################################################################################################################################
+### Generate a dataframe listing the distance from the channel edge to the diffusion front for both sides of the channel at each timepoint
 
-### Generate a dataframe of diffusion-front positions over time
-#time.step = 10
-umPerPixel = 2.5
-channelWidth = 600
-#cutoff = 1000                                             # For log data
-cutoff = max.background * 2                                               # For linear data
-
-
-### Method 2
 edge.pos.df <- data.frame(Layer = c(), Time = c(),Left.edge = c(), Right.edge = c(), Width = c(), dist.left = c(), dist.right = c(), Distance = c(), Max_Intensity = c())
-for (layer.num in 1:nlayers(stack.to.process)){           # Begin loop through the number of slices in the stack
-  row.averages <- row.averages.matrix[layer.num,]
-  ### Calculate positions where intensity exceeds cutoff
-  dye.location <- diffusion.df$position[which(row.averages > cutoff)]            # Calculate the locations over the fluorescences
+                                                                    # Generate an empty data frame
+for (layer.num in 1:nlayers(stack.to.process)){                     # Begin loop through the number of slices in the stack
+  row.averages <- row.averages.matrix[layer.num,]                   # Define the current row average vector
+  
+  dye.location <- diffusion.df$position[which(row.averages > cutoff)] # Calculate the locations where intensity exceeds the cutoff value
   
   ### Fill data frame
-  time = time.step*(layer.num-1)                                 # Assign time value
-  left.edge = dye.location[1]                             # Assign left pos
-  right.edge = dye.location[length(dye.location)]         # Assign right pos
-  if (left.edge == 0) {right.edge = 0}                  # Error handling
-  width = (right.edge - left.edge) * umPerPixel           # Calculate width of flourescent front
-  dist.left = left.channel.edge - left.edge
-  dist.right = right.edge - right.channel.edge
-  distance = mean(c(dist.left, dist.right))                      # Calcualte distance of flourescent front from starting point (channel edge)
-  maxIntensity = max(row.averages)/100                    # Calculate max intensity
+  time = time.step*(layer.num-1)                                    # Assign time value
+  left.edge = dye.location[1]                                       # Assign left position
+  right.edge = dye.location[length(dye.location)]                   # Assign right position
+  if (left.edge == 0) {right.edge = 0}                              # Error handling
+  width = (right.edge - left.edge) * umPerPixel                     # Calculate width from one diffusion front to the other
+  dist.left = left.channel.edge - left.edge                         # Calculate the distance from the channel to the left front
+  dist.right = right.edge - right.channel.edge                      # Calculate the distance to the right front
+  distance = mean(c(dist.left, dist.right))                         # Average the distances of the two diffusion fronts
+  maxIntensity = max(row.averages)/100                              # Calculate max intensity
   new.row <- data.frame(layer.num, time, left.edge, right.edge, width, dist.left, dist.right, distance, maxIntensity)
-  edge.pos.df <- rbind(edge.pos.df, new.row)
+  edge.pos.df <- rbind(edge.pos.df, new.row)                        # Assign new values to the data frame
 }
 
 edge.pos.df$distance  <- rollmean(edge.pos.df$distance, k = 3, fill = c(edge.pos.df$distance[1], 0, edge.pos.df$distance[nrow(edge.pos.df)]))
+                                                                    # Apply a smoothing function the average of diffusion front distances
 
-### Examining diffusion front data frame
+#####################################################################
+## 6.1 - Examining the data frame of diffusion front positions over time
 str(edge.pos.df)
 head(edge.pos.df)
 
-### Plot diffusion front over time
+#####################################################################
+## 6.2 -  Plot the diffusion front distance over the time series
 dist.over.time <- ggplot(data = edge.pos.df, aes(x = time/60, y = distance)) +
   geom_line(aes(y = distance), color = 'blue', size = 2) +
   geom_point(aes(y = dist.left), color = 'grey50', pch = '-', size = 7) +
@@ -218,34 +219,44 @@ dist.over.time <- ggplot(data = edge.pos.df, aes(x = time/60, y = distance)) +
         axis.text=element_text(size=12),
         axis.title=element_text(size=14, margin(2, 2, 2, 2)))
 
-### Show plot
+#####################################################################
+## 6.3 - Display the plot
 dist.over.time
 
-### Save plot
+#####################################################################
+## 6.4 Export the plot
 setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/")
 png(filename= paste0('Diff DISTANCE over time/', assayID,'_front dist over time.png'), width = 800, height = 800, units = "px", pointsize = 12)
 plot(dist.over.time)
 dev.off()
 
-### Save Diffusion Front Data
+#####################################################################
+## 6.5 - Export the diffusion front data frame
 setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/")
 write.csv(edge.pos.df, paste0('Edge_position_tables/',title,'_',toupper(format(Sys.Date(),"%d%b%y")),'.csv'),row.names = FALSE)
 
 
 
+#
+##
+###
+#####
+########
+############
+#############
+############
+########
+#####
+###
+##
+#
 
 
 
 
-
-### 6.0 - Comparison of multiple x-positions over cutoff
+### 7.0 - Scratchwork
 #####################################################################
-
-#names(edge.pos.df)[6] <- assayID
-assay.list <- c(assay.list, assayID)
-
-multi.edge.df <- 1
-  
+# Comparison of multiple x-positions over cutoff
   
 ### Generate first columns
 multi.edge.df <- edge.pos.df[c(2,6)]
@@ -288,12 +299,6 @@ png(filename= paste0('multi.dist.over.time.png'), width = 800, height = 800, uni
 plot(multi.dist.over.time)
 dev.off()
 
-### 7.0 - Automated plotting of intensity at a position over time
-#####################################################################
-### Generate a dataframe of diffusion-front positions over time
-#
-#
-#
 
 ### 3.0 - Manual plotting of intensity profile
 #####################################################################
@@ -332,126 +337,3 @@ row.averages <- apply(layer.matrix.ss,1,mean)
 
 plot.20 <- plot(row.averages)
 
-
-
-### TS-2 - Manual plotting of positions above cutoff
-#####################################################################
-umPerPixel = 2.5
-channelWidth = 600
-
-stacklayer = 20
-
-### Calculate cutoff positions
-#(cutoff = max(row.averages)/100)                                     # Define the cutoff as 1/20th the max value
-cutoff = 1000
-row.averages <- row.averages.matrix[stacklayer,]
-cutoff.vector <- row.averages > cutoff                              # Report which rows are above the cutoff value
-dye.location <- which(row.averages > cutoff)                       # 
-
-### Create a table of edge positions
-edge.pos.df <- data.frame(Layer = c(), Time = c(),Left.edge = c(), Right.edge = c(), Width = c(), Distance = c(), Max_Intensity = c())
-
-(time = 20*stacklayer)
-(left.edge = dye.location[1])
-(right.edge = dye.location[length(dye.location)])
-(width = (right.edge - left.edge) * umPerPixel)
-(distance = width/2 - channelWidth)
-(maxIntensity = max(row.averages)/100)                    # Calculate max intensity
-
-new.row <- data.frame(stacklayer, time, left.edge, right.edge, width, distance, maxIntensity)
-(edge.pos.df <- rbind(edge.pos.df, new.row))
-
-
-plot(row.averages.matrix[10,]);abline(h = cutoff, col = "red")   
-abline(v = 1370); abline(v = 1371+(600/2.5))
-
-#plot(log(row.averages.matrix[2,]));abline(h = cutoff, col = "blue")  
-
-ggplot(data = row.averages.matrix, aes()) +
-  geom_point(aes(x = row.averages.matrix[10,])) + 
-  scale_x_continuous(name="Layer", breaks = seq(0,10000, 10)) +
-  scale_y_continuous(name="Distance from channel", breaks = seq(0,10000, 100))
-
-p + scale_y_continuous(breaks=seq(0,40,5))
-
-### Plotting the curve front
-diffusion.profile.list <- list()
-layer.num = 10
-layer.of.interest <- stack.to.process[[layer.num]]      # Call the current layer in the stack
-layer.matrix <- as.matrix(layer.of.interest)+1
-#layer.matrix <- log(layer.matrix)
-### Calculate row averages
-dim(layer.matrix)
-row.averages <- apply(layer.matrix,1,mean)
-plot(row.averages)
-
-### Add to list
-diffusion.profile.list[[2]] <- row.averages
-diffusion.df <- data.frame(x = 1:2458, "time0" = diffusion.profile.list[[1]], "time4min" = diffusion.profile.list[[2]], 
-                           "time8min" = diffusion.profile.list[[3]], "time12min" = diffusion.profile.list[[4]],
-                           "time16min" = diffusion.profile.list[[5]], "time20min" = diffusion.profile.list[[6]] )
-
-### Plotting a 3D contour surface 
-
-### Plot fluorescent intensity at three points over time
-# Poins of measure: 340, 300, 250, 200
-intensity.at.pos.df <- data.frame(time=c(),Int.340 = c(), Int.300 = c(), Int.250 = c(), Int.200 = c())
-
-### Full loop
-for (layer.num in 1:nlayers(stack.to.process)){           # Begin loop through the number of slices in the stack
-  layer.of.interest <- stack.to.process[[layer.num]]      # Call the current layer in the stack
-  layer.matrix <- as.matrix(layer.of.interest)+1
-  #layer.matrix <- log(layer.matrix)
-  ### Calculate row averages
-  row.averages <- apply(layer.matrix,1,mean)
-
-  new.row = data.frame(time = 20*(layer.num-1), Int.340 = row.averages[340], Int.300 = row.averages[300], 
-                       Int.250 = row.averages[250], Int.200 = row.averages[200])
-  intensity.at.pos.df <- rbind(intensity.at.pos.df, new.row)
-
-}
-
-ggplot(data = intensity.at.pos.df, aes(x = time)) +
-  geom_point(aes(y = Int.340, color = 'pos340')) +
-  geom_point(aes(y = Int.300, color = 'pos300')) +
-  geom_point(aes(y = Int.250, color = 'pos250')) +
-  geom_point(aes(y = Int.200, color = 'pos200')) +
-  theme(panel.background = element_rect(fill = "black", linetype = "blank", colour = "black"), 
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  guides(guide_legend()) +
-  scale_color_manual(name="Position", 
-                     labels = c("pos340" = "Position 340", 
-                                "pos300" = "Position 300", 
-                                "pos250" = "Position 250",
-                                "pos200" = "Position 200"), 
-                     values = c("pos340" = "red", 
-                                "pos300" = "orange", 
-                                "pos250" = "yellow",
-                                "pos200" = "green"), 
-                     limits = c("pos340", "pos300", "pos250", "pos200")) +
-  labs(title="Fluorescent Intensity over Time at a position", y="Fluorescent Intensity", x="Time (Sec)")
-
-
-### Method 1 for creating a dataframe of diffusion front positiosn
-edge.pos.df <- data.frame(Layer = c(), Time = c(),Left.edge = c(), Right.edge = c(), Width = c(), Distance = c(), Max_Intensity = c())
-for (layer.num in 1:nlayers(stack.to.process)){           # Begin loop through the number of slices in the stack
-  ### Prepare the row averages vector
-  layer.of.interest <- stack.to.process[[layer.num]]      # Call the current layer in the stack
-  layer.matrix <- as.matrix(layer.of.interest)+1          # Convert to matrix
-  layer.matrix <- log(layer.matrix)                       # Log transform
-  row.averages <- apply(layer.matrix,1,mean)              # Calculate row averages
-  
-  ### Calculate positions where intensity exceeds cutoff
-  dye.location <- which(row.averages > cutoff)            # Calculate the locations over the fluorescences
-  
-  ### Fill data frame
-  time = time.step*(layer.num-1)                                 # Assign time value
-  left.edge = dye.location[1]                             # Assign left pos
-  right.edge = dye.location[length(dye.location)]         # Assign right pos
-  if (left.edge == 0) {right.edge = 0}                  # Error handling
-  width = (right.edge - left.edge) * umPerPixel           # Calculate width of flourescent front
-  distance = width/2 - channelWidth                       # Calcualte distance of flourescent front from starting point (channel edge)
-  maxIntensity = max(row.averages)/100                    # Calculate max intensity
-  new.row <- data.frame(layer.num, time, left.edge, right.edge, width, distance, maxIntensity)
-  edge.pos.df <- rbind(edge.pos.df, new.row)
-}
