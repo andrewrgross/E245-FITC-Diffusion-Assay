@@ -1,9 +1,9 @@
 ### FITC Diffusion Data Comparison -- Andrew R Gross -- 2021/03/10
 ### The script reads in tables generated in the FITC Diffusion Image Processing script
 ### And plots the positions releative to one antoher for comparison purposes
-
+##########################################################################################################################################
 ### 1.0 - Header
-#####################################################################
+##########################################################################################################################################
 #require(raster)             # Load raster package
 #require(rgdal)
 #library(plotly)
@@ -11,9 +11,9 @@ library(ggplot2)
 library(zoo)
 #library('plyr')
 
-
+##########################################################################################################################################
 ### 2.0 - Import Diffusion Data Tables
-#####################################################################
+##########################################################################################################################################
 
 setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/Edge_position_tables/")
 diffusion.data.list <- list()
@@ -35,9 +35,10 @@ metadata.df <- data.frame(file.list = file.list, cells = c('dead', 'dead', 'dead
 ## 2.1 - Report data info
 ##########################
 
+##########################################################################################################################################
 ### 3.0 - Plot distance over time of individual diffusion fronts
-#####################################################################
-### Plot the left and right side distance over time at the cutoff
+##########################################################################################################################################
+## Plot the left and right side distance over time at the cutoff
 
 print(data.frame(file.list))
 print(metadata.df)

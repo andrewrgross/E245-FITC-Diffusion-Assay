@@ -6,8 +6,8 @@
 ##########################################################################################################################################
 require(raster)
 require(rgdal)
-library(plotly)
-library(ggplot2)
+#library(plotly)
+library(ggplot2)   
 library(zoo)
 
 ##########################################################################################################################################
@@ -61,7 +61,7 @@ setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/
 
 #####################################################################
 ## 2.1 - Import selected image set
-stack.to.process <- stack(list.files())
+stack.to.process <- stack(list.files())                              # (Requires Rastor)
 
 #####################################################################
 ## 2.2 - Report dataset infomation
@@ -83,7 +83,7 @@ for(stacklayer in 1:nlayers){                           #$$$$$$$$$$$ ~0.5 sec/sl
   layer.matrix <- as.matrix(layer.current)+1            ### Convert to Matrix
   layer.matrix <- log(layer.matrix)+1                   ### Log transform the intensity
   row.averages <- apply(layer.matrix,1,mean)            ### Calcuate row averages
-  row.averages <- rollmean(row.averages, k = 9)         ### Smooth the data
+  row.averages <- rollmean(row.averages, k = 9)         ### Smooth the data (requires Zoo)
   row.averages.matrix[stacklayer,] <- row.averages      ### Assign to the matrix
 }
 
@@ -109,7 +109,7 @@ for (timepoint in 1:6) {
 }
 
 #####################################################################
-## 4.2 - Plot multiple intensity profiles using the data frame of subsampled time points
+## 4.2 - Plot multiple intensity profiles using the data frame of subsampled time points  (Requires ggplot)
 diff.front <- ggplot(data=diffusion.df, aes(x = position), label = c("t0","t1","t2", "t3", "t4", "t5")) + 
   geom_line(aes(y=t0, col = 't0'), size = 2) + 
   geom_line(aes(y=t1, col = 't1'), size = 1) +
@@ -140,11 +140,11 @@ diff.front <- ggplot(data=diffusion.df, aes(x = position), label = c("t0","t1","
   labs(title="Diffusion range over Time", y="Log Relative Fluorescent Intensity", x="Position (um)")
 
 #####################################################################
-## 4.3 - Display Plot of multiple intensity profiles
+## 4.2.1 - Display Plot of multiple intensity profiles
 diff.front +coord_flip()
 
 #####################################################################
-## 4.4 - Identify channel edges and fluorescence cutoffs
+## 4.3 - Identify channel edges and fluorescence cutoffs
 max.background = max(diffusion.df$t0[1:100])                        # Find the maximum intensity in the first 100 pixels of the first image
 cutoff = max.background * 2                                         # Define the cutoff as twice the maximum background intensity
 #max.intensity = max(diffusion.df$t0)
@@ -152,17 +152,17 @@ above.threshold = which(diffusion.df$t0 > cutoff)                   # Identify w
 left.channel.edge <- diffusion.df$position[above.threshold[1]]      # Find the left-most and right-most positions above the cutoff
 right.channel.edge <- diffusion.df$position[above.threshold[length(above.threshold)]]
 
-## Plot the intensity profiles with the cutoff and boundary lines superimposed
+#####################################################################
+## 4.3.1 - Plot the intensity profiles with the cutoff and boundary lines superimposed
 (boundary.lines <- diff.front + geom_hline(yintercept = cutoff, linetype="dashed", color = "white", size=1) +
-  geom_vline(xintercept = left.channel.edge, color = "blue") +
-  geom_vline(xintercept = right.channel.edge, color = "blue")) 
+  geom_vline(xintercept = left.channel.edge, color = "yellow", size = 1) +
+  geom_vline(xintercept = right.channel.edge, color = "yellow", size = 1)) 
 
 boundary.lines + coord_flip()
 
 
-##########################################################################################################################################
-### 5.0 - Export plot
-##########################################################################################################################################
+#####################################################################
+## 4.4 - Export plot
 setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/")
 
 png(filename= paste0('Diff ranges over time/', assayID,'_Diff range over time.png'), width = 800, height = 800, units = "px", pointsize = 12)
@@ -170,9 +170,9 @@ plot(boundary.lines)
 dev.off()
 
 ##########################################################################################################################################
-### 6.0 - Automated plotting of X-positions above cutoff
+### 5.0 - Automated plotting of X-positions above cutoff
 ##########################################################################################################################################
-### Generate a dataframe listing the distance from the channel edge to the diffusion front for both sides of the channel at each timepoint
+## 5.1 - Generate a dataframe listing the distance from the channel edge to the diffusion front for both sides of the channel at each timepoint
 
 edge.pos.df <- data.frame(Layer = c(), Time = c(),Left.edge = c(), Right.edge = c(), Width = c(), dist.left = c(), dist.right = c(), Distance = c(), Max_Intensity = c())
                                                                     # Generate an empty data frame
@@ -199,12 +199,12 @@ edge.pos.df$distance  <- rollmean(edge.pos.df$distance, k = 3, fill = c(edge.pos
                                                                     # Apply a smoothing function the average of diffusion front distances
 
 #####################################################################
-## 6.1 - Examining the data frame of diffusion front positions over time
+## 5.1.1 - Examine the data frame of diffusion front positions over time
 str(edge.pos.df)
 head(edge.pos.df)
 
 #####################################################################
-## 6.2 -  Plot the diffusion front distance over the time series
+## 5.2 -  Plot the diffusion front distance over the time series
 dist.over.time <- ggplot(data = edge.pos.df, aes(x = time/60, y = distance)) +
   geom_line(aes(y = distance), color = 'blue', size = 2) +
   geom_point(aes(y = dist.left), color = 'grey50', pch = '-', size = 7) +
@@ -220,18 +220,18 @@ dist.over.time <- ggplot(data = edge.pos.df, aes(x = time/60, y = distance)) +
         axis.title=element_text(size=14, margin(2, 2, 2, 2)))
 
 #####################################################################
-## 6.3 - Display the plot
+## 5.2.1 - Display the plot
 dist.over.time
 
 #####################################################################
-## 6.4 Export the plot
+## 5.2.2 Export the plot
 setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/")
 png(filename= paste0('Diff DISTANCE over time/', assayID,'_front dist over time.png'), width = 800, height = 800, units = "px", pointsize = 12)
 plot(dist.over.time)
 dev.off()
 
 #####################################################################
-## 6.5 - Export the diffusion front data frame
+## 5.3 - Export the diffusion front data frame
 setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/")
 write.csv(edge.pos.df, paste0('Edge_position_tables/',title,'_',toupper(format(Sys.Date(),"%d%b%y")),'.csv'),row.names = FALSE)
 
@@ -253,10 +253,44 @@ write.csv(edge.pos.df, paste0('Edge_position_tables/',title,'_',toupper(format(S
 
 
 
+##########################################################################################################################################
+### 6.0 - Scratchwork
+##########################################################################################################################################
+### 6.1 - Visualize a in image as a heatmap
+## Select the stack imate to view
+stacklayer = 10
+layer.current <- stack.to.process[[stacklayer]]           # Pull the specified layer
+layer.matrix <- as.matrix(layer.current)+1                # Convert to matrix
 
-### 7.0 - Scratchwork
 #####################################################################
-# Comparison of multiple x-positions over cutoff
+## 6.2 - Subset image to crop if desired
+range = dim(layer.matrix)[[1]]
+offset = 0
+(xpos = nrow(layer.matrix)/2 + offset - (range/2))
+layer.matrix.ss <- layer.matrix[xpos:(xpos+range),1:500]
+dim(layer.matrix.ss)
+layer.matrix.ss <- log(layer.matrix.ss)+1
+
+#####################################################################
+## 6.3 -Intensity distribution check
+#hist(layer.matrix, breaks = 50)
+#hist(layer.matrix.ss, breaks = 50)
+#quantile(as.vector(layer.matrix), seq(0,1,0.1))
+
+#####################################################################
+## 6.4 - Plot the image as a heatmap
+my_palette <- colorRampPalette(c("black", "green"))(n = 299)
+heatmap(layer.matrix.ss, Rowv = NA, Colv = NA, col = my_palette, scale = "none")
+
+#####################################################################
+## 6.5 Calcuate row averages
+row.averages <- apply(layer.matrix.ss,1,mean)
+plot(row.averages)
+
+
+
+#####################################################################
+## Comparison of multiple x-positions over cutoff
   
 ### Generate first columns
 multi.edge.df <- edge.pos.df[c(2,6)]
@@ -298,42 +332,4 @@ setwd("C://Users/grossar/Box/Sareen Lab Shared/Data/Andrew/E352 - FITC Analysis/
 png(filename= paste0('multi.dist.over.time.png'), width = 800, height = 800, units = "px", pointsize = 12)
 plot(multi.dist.over.time)
 dev.off()
-
-
-### 3.0 - Manual plotting of intensity profile
-#####################################################################
-### Select stack layer
-stacklayer = 10
-layer.current <- stack.to.process[[stacklayer]]           # Pull the specified layer
-#layer.current <- subset(stack.to.process,stacklayer)     # An alternative means of calling a layer
-
-### Convert to Matrix
-layer.matrix <- as.matrix(layer.current)+1                # Convert to matrix
-
-### Subset image
-range = dim(layer.matrix)[[1]]
-offset = 0
-#range = 1800
-#offset = 250
-(xpos = nrow(layer.matrix)/2 + offset - (range/2))
-layer.matrix.ss <- layer.matrix[xpos:(xpos+range),1:500]
-dim(layer.matrix.ss)
-layer.matrix.ss <- log(layer.matrix.ss)+1
-
-### Intensity distribution check
-#hist(layer.matrix, breaks = 50)
-#hist(layer.matrix.ss, breaks = 50)
-#quantile(as.vector(layer.matrix), seq(0,1,0.1))
-
-### Plot as heatmap
-#colors = c(seq(-3,-2,length=100),seq(-2,0.5,length=100),seq(0.5,6,length=100))
-my_palette <- colorRampPalette(c("black", "green"))(n = 299)
-heatmap(layer.matrix.ss, Rowv = NA, Colv = NA, col = my_palette, scale = "none")
-#heatmap(layer.matrix, Rowv = NA, Colv = NA, col = my_palette)
-
-### Calcuate row averages
-row.averages <- apply(layer.matrix.ss,1,mean)
-#row.averages <- apply(layer.matrix,1,mean)
-
-plot.20 <- plot(row.averages)
 
